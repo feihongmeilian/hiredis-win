@@ -822,13 +822,14 @@ int redisBufferRead(redisContext *c) {
 
     
     if (nread == -1) {
+#ifndef _MSC_VER
         if ((errno == EAGAIN && !(c->flags & REDIS_BLOCK)) || (errno == EINTR)) {
             /* Try again later */
-        } else {
-            __redisSetError(c,REDIS_ERR_IO,NULL);
-			//printf("%d , errno=%d,WSAGetLastError()=%d,%d\n\n", __LINE__, errno, WSAGetLastError(), WSAETIMEDOUT);
-			return REDIS_ERR;
+			return REDIS_OK;
         }
+#endif
+        __redisSetError(c,REDIS_ERR_IO,NULL);
+        return REDIS_ERR;
     } else if (nread == 0) {
         __redisSetError(c,REDIS_ERR_EOF,"Server closed the connection");
         return REDIS_ERR;
